@@ -1,11 +1,14 @@
-Function Get-RepositoryStatistic {
+Function Get-CommitStatistic {
     <#
     .SYNOPSIS
         Enumerates the child items of a location and invokes  git status on each item
 
     .EXAMPLE
-        PS C:\>Get-RepositoryStatus -Path 'C:\dev\'
-        Explanation of what the example does
+        PS C:\Dev\Github\PowerGit> Get-PowerGitCommitStatistic
+
+        Location                Author       Commits
+        --------                ------       -------
+        C:\Dev\Github\PowerGit  Mark Warneke      1
 
     .DESCRIPTION
         Enumerates the child items of a location and invokes  git status on each item
@@ -54,7 +57,7 @@ Function Get-RepositoryStatistic {
                 $gitShortlog = git shortlog -sn
             }
 
-            ConvertTo-PsCustomObject $gitShortlog  $item
+            ConvertTo-PsCustomObject $gitShortlog $(Get-Location)
         }
     }
 

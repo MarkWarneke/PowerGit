@@ -1,11 +1,11 @@
 
-Function Get-RepositoryStatus {
+Function Get-Status {
     <#
         .SYNOPSIS
             Enumerates the child items of a location and invokes  git status on each item
 
         .EXAMPLE
-            PS C:\>Get-RepositoryStatus -Path 'C:\dev\'
+            PS C:\>Get-Status -Path 'C:\dev\'
             Explanation of what the example does
 
         .DESCRIPTION
@@ -37,19 +37,21 @@ Function Get-RepositoryStatus {
     process {
 
         foreach ($item in $Path) {
-            Test-Path $item -OutVariable $out
-
+            Test-Path $item | Out-Null
             Push-Location $Item
-
             $status = git status
-            [PSCustomObject]@{
-                'Location' = $item
-                'Status'   = $status
-            }
+            ConvertTo-PsCustomObject $status $(Get-Location)
         }
     }
 
     end {
         Push-Location $startDir
+    }
+}
+
+function ConvertTo-PsCustomObject ($Git, $item) {
+    [PSCustomObject]@{
+        'Location' = $item
+        'Status'   = $($Git)
     }
 }
