@@ -10,32 +10,41 @@ if ((Split-Path $ModuleBase -Leaf) -eq 'Test') {
 $Env:ModuleBase = $ModuleBase
 Import-Module $ModuleBase\$ModuleName.psd1 -PassThru -ErrorAction Stop | Out-Null
 
-Describe "New-Component Unit" -Tags Unit {
+Describe "Get-PowerGitStatus Unit" -Tags Unit {
 
     context "Invalid Parameter" {
 
-        It "should " {
+        It "should throw if path invalid" {
 
-            # New-Component | Should Be $true
+             { Get-PowerGitStatus 'MYNOTEXISTINGFOLDER' } | Should Throw
         }
 
     }
 
 }
 
-Describe "New-Component Build" -Tags Unit {
+$currentDirectory = Get-Location
+
+Describe "Get-PowerGitStatus Build" -Tags Build {
 
     BeforeAll {
-
+        $testPath = "TestDrive:\README.md"
+        Set-Content $testPath -value "My inital file to commit"
+        Push-Location TestDrive:
+        git init
+        git add .
+        git commit -am 'initial commit'
     }
 
     AfterAll {
-
+        Push-Location $currentDirectory
     }
 
     It "Rule New-Component" {
 
-        # New-Component | Should Be $true
+        $Status = Get-PowerGitStatus
+        $Status.Commit | Should Be 1
+        $Status.Location | Should Be "TestDrive:"
     }
 
 }
