@@ -39,7 +39,7 @@ Function Get-CommitStatistic {
             ValueFromPipelineByPropertyName = $true,
             HelpMessage = " Should merges be counted?"
         )]
-        [switch] $Merges
+        [switch] $NoMerges
     )
 
     begin {
@@ -57,7 +57,7 @@ Function Get-CommitStatistic {
                 $gitShortlog = git shortlog -sn
             }
 
-            ConvertTo-PsCustomObject $gitShortlog $(Get-Location)
+            ConvertTo-PsCustomObjectCommitStatistics $gitShortlog $(Get-Location)
         }
     }
 
@@ -68,7 +68,7 @@ Function Get-CommitStatistic {
 
 }
 
-function ConvertTo-PsCustomObject ($ShortLog, $item) {
+function ConvertTo-PsCustomObjectCommitStatistics ($ShortLog, $item) {
     foreach ($authorLog in $ShortLog) {
         $statisticByAuthor = $authorLog -split "\t"
         [PSCustomObject]@{

@@ -40,7 +40,7 @@ Function Get-Status {
             Test-Path $item | Out-Null
             Push-Location $Item
             $status = git status
-            ConvertTo-PsCustomObject $status $(Get-Location)
+            ConvertTo-PsCustomObjectStatus $status $(Get-Location)
         }
     }
 
@@ -49,9 +49,60 @@ Function Get-Status {
     }
 }
 
-function ConvertTo-PsCustomObject ($Git, $item) {
-    [PSCustomObject]@{
-        'Location' = $item
-        'Status'   = $($Git)
+function ConvertTo-PsCustomObjectStatus ($Git, $item) {
+
+    $branch = $git[0] -split "\s"
+    $remoteBanch = $git[1] -split "\s"
+
+    $i = 7
+    $modified = @()
+    while (! (IsEmpty($git[$i]) )) {
+        $modified += ($git[$i] -split "\s")[-1]
+        $i++
     }
+
+    while (! (IsUntrackedFiles($git[$i]))) {
+        $i++
+    }
+    $i += 3
+
+    $untracked = @()
+    while (! (IsEmpty($git[$i]))) {
+        $untracked += ($git[$i] -split "\t")[-1]
+        $i++
+    }
+
+    $Status = [Status]::new()
+    $Status.Location = $item
+    $Status.Branch = $branch[2]
+    $Status.RemoteBranch = $remoteBanch[-1].replace("'", '').replace('.', '')
+    $status.Modified = $modified
+    $Status.Untracked = $untracked
+    $Status.Status = $($Git)
+
+    Write-Output $Status
 }
+
+function IsModified($line) {
+    $split = ($line -split "\s")
+    return $split[1] -eq "modified:"
+}
+
+function IsUntrackedFiles($line) {
+    return $line -eq "Untracked files:"
+}
+
+function IsEmpty($line) {
+    return [string]::IsNullOrEmpty($line)
+}
+
+class Status {
+    [System.Management.Automation.PathInfo] $Location
+    [String] $Branch
+    [String] $RemoteBranch
+    [System.IO.FileInfo[]] $Modified
+    [System.IO.FileInfo[]] $Untracked
+    hidden [String] $Status
+}
+
+Get-Status
